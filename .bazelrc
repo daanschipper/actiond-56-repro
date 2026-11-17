@@ -1,0 +1,10 @@
+# All actions run in the actiond VM. They use only bash builtins, so the stock runtime is enough.
+common --remote_executor=grpc://127.0.0.1:8980
+common --remote_cache=grpc://127.0.0.1:8980
+common --extra_execution_platforms=//:actiond
+common --host_platform=//:actiond
+common --platforms=//:actiond
+common --spawn_strategy=remote
+common --remote_local_fallback=false
+common --disk_cache=
+common --jobs=32

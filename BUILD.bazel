@@ -1,0 +1,35 @@
+load(":defs.bzl", "repro_read", "repro_write")
+
+platform(
+    name = "actiond",
+    constraint_values = [
+        "@platforms//os:linux",
+        "@platforms//cpu:x86_64",
+    ],
+    exec_properties = {
+        "OSFamily": "Linux",
+        "libc": "glibc2.39",
+        "requires-bash": "",
+    },
+)
+
+# 96 files of 64 MiB: 6 GiB in the CAS, several times the guest page cache.
+WRITERS = 96
+
+# Each reader reads 8 files, so every file is read by 8 readers in different actions.
+READERS = 96
+
+[repro_write(name = "w%d" % i) for i in range(WRITERS)]
+
+[
+    repro_read(
+        name = "r%d" % i,
+        srcs = [":w%d" % ((i * 7 + k * 13) % WRITERS) for k in range(8)],
+    )
+    for i in range(READERS)
+]
+
+filegroup(
+    name = "all_reads",
+    srcs = [":r%d" % i for i in range(READERS)],
+)
